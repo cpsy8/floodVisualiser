@@ -231,7 +231,6 @@ districts_of_states = {
     ]
 }
 
-
 districts_shapefile_path = "src/India_Districts.shp"
 states_shapefile_path = "src/india_states.shp"
 districts_gdf = gpd.read_file(districts_shapefile_path)
@@ -261,7 +260,6 @@ navbar = html.Div(
     className="navbar"
 )
 
-# Table creator
 def create_data_table(dataframe):
     return dash_table.DataTable(
         id='datatable-interactivity',
@@ -483,7 +481,15 @@ def update_datatable_interactivity(selected_rows, highlight_option, table_data):
         matched_states = [process.extractOne(state, states_gdf['ST_NM'].unique())[0] for state in affected_states]
         matched_states_gdf = states_gdf[states_gdf['ST_NM'].isin(matched_states)]
 
-        matched_districts = [process.extractOne(district, districts_gdf['Dist_Name'].unique())[0] for district in affected_districts]
+        part_matched_districts = [process.extractOne(district, districts_gdf['Dist_Name'].unique())[0] for district in affected_districts]
+
+        matched_districts = []
+        for district in part_matched_districts:
+            state_name = districts_gdf[districts_gdf['Dist_Name'] == district]['State_Name'].values
+    
+            if state_name.size > 0 and state_name[0].title() in affected_states:
+                matched_districts.append(district)
+        
         matched_districts_gdf = districts_gdf[districts_gdf['Dist_Name'].isin(matched_districts)]
 
         if highlight_option == 'state':
@@ -510,6 +516,7 @@ def update_datatable_interactivity(selected_rows, highlight_option, table_data):
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
